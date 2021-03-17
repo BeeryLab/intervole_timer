@@ -1,0 +1,97 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Arial-BoldItalicMT;\f1\fswiss\fcharset0 Arial-BoldMT;\f2\fswiss\fcharset0 ArialMT;
+\f3\fswiss\fcharset0 Arial-ItalicMT;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue255;}
+{\*\expandedcolortbl;;\csgenericrgb\c0\c0\c100000;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\ri52\qc\partightenfactor0
+
+\f0\i\b\fs20 \cf0 Partner Preference Test (PPT) IntervoleTimer Instructions\
+\pard\pardeftab720\ri52\partightenfactor0
+
+\f1\i0 \cf0 \
+Scoring background and behavior definitions:\
+\pard\pardeftab720\ri52\partightenfactor0
+
+\f2\b0 \cf0 This script records the position of a focal vole (or other species) in a three-chambered PPT apparatus, starting in the central/neutral chamber. < and > keys (note, not the arrow keys) are used to move the icon of a vole to match the position or state of a vole observed in a behavioral test video.  States recorded are: \
+\pard\pardeftab720\li360\ri52\partightenfactor0
+\cf0 0: Left chamber huddling\
+1: Left chamber not huddling\
+2: Center chamber\
+3: Right chamber not huddling\
+4: Right chamber huddling \
+\pard\pardeftab720\ri52\partightenfactor0
+\cf0 \
+The script records time stamps of each state transition in the raw data file, and provides summary data on time spent in different states (e.g. left chamber total, left chamber huddling only) as well as activity level, operationalized as the number of transitions to the center chamber from the left and right chambers. We consider a vole to have entered a chamber when the front half its body is in the chamber.\
+\
+Huddling is defined as resting side-by-side (or one on top of the other) contact between focal vole and partner/stranger. Nose-touching, anogenital investigation, and aggressive interactions are not considered huddling, even if voles are in contact with each other.\
+\
+While the apparatus depicted on screen is linear, it\'92s fine to use the same code for scoring a branched/tube connected style of PPT apparatus.  Voles spend a fair amount of time in the tubes, so choose and record a consistent definition for entry to a chamber. This code can also be easily adapted for other multi-chamber tests (e.g. a two or three-chamber SCPP test) by changing the test duration variable for accurate scaling. We have versions pre-customized and with different apparatus depictions for the open field test, elevated plus maze, light-dark box, social interaction test, operant social choice, two-chamber social choice, and others available upon request).\
+\pard\pardeftab720\ri52\partightenfactor0
+
+\f0\i\b \cf0 \
+\pard\pardeftab720\ri52\partightenfactor0
+
+\f1\i0 \cf0 Materials:\
+\pard\pardeftab720\li720\fi-360\ri52\partightenfactor0
+\ls1\ilvl0
+\f2\b0 \cf0 \'95	IntervoleTimer1.6.pl \
+\'95	A computer running MacOS (or Unix or Linux; these instructions assume a Mac)\
+\'95	Video playback software* with high-speed playback (e.g. Quicktime player, VLC, iTunes) or a pre-accelerated video (for example a time-lapse recording)\
+\'95	Video recorded during a partner preference test\
+\'95	Optional: timer with audible beep\
+\'95	Optional: handheld tally counter if measuring aggressive interactions, mounting, or other behaviors beyond position\
+\pard\pardeftab720\ri52\partightenfactor0
+\cf0 \
+\pard\pardeftab720\ri52\partightenfactor0
+
+\f3\i \cf0 *A note about video players
+\f2\i0 : If the video is a .mp4 file, both QuickTime (usually the default program) and iTunes will play the video correctly at 5x speed. Both file types can also be opened in VLC player, but VLC cannot exceed 4x playback. If the video is a .mpg file, open with iTunes (because as of 2020, .mpg files accelerated to 5x speed in QuickTime play back at a different speed), or check to see if this bug has been fixed.
+\f1\b  
+\f3\i\b0 \
+\pard\pardeftab720\ri52\partightenfactor0
+
+\f0\b \cf0 \
+\pard\pardeftab720\ri52\partightenfactor0
+
+\f1\i0 \cf0 Instructions (for version 1.6):\
+\pard\pardeftab720\li720\fi-360\ri52\partightenfactor0
+\ls2\ilvl0
+\f2\b0 \cf0 \'95	Download IntervoleTimer ({\field{\*\fldinst{HYPERLINK "https://github.com/BeeryLab/intervole_timer/"}}{\fldrslt \cf2 \ul \ulc2 https://github.com/BeeryLab/intervole_timer/}}) and store the file (IntervoleTimer1.6.pl) on the Desktop.\
+\'95	Open the video to be scored and size it to ~half the screen width available. Scroll to the frame with the test information card and pause there.\
+\'95	Open Terminal (~/Applications/Utilities/Terminal.app) and in the Terminal window type \'93cd Desktop/\'94 to change directory to the Desktop (or change directory to wherever you have stored the scoring code).\
+\'95	Launch the perl script by typing in the Terminal window \'93perl IntervoleTimer1.6.pl\'94 If you type part of the filename and hit \'93tab\'94, depending on your shell (BASH, ZSH, etc.) it may autocomplete the full filename as long as there are no other similarly named files on the Desktop.  Note that the filename is case sensitive.  \
+\'95	Terminal should now display the opening screen of the scoring script with an ASCII text rodent image. At the prompts, enter the relevant information about the test. You will be asked for a 
+\f1\b test ID, date, the ID of the left vole, the ID of the right vole, the playback speed (e.g. 3x, 4x, 5x) and the type of video file. 
+\f2\b0 The only required information is a unique test ID, used to generate the filename.  Other fields can be completed or left blank as desired. Information entered at the prompts appears at the top of the output file. \
+\'95	When you are done entering information or typing <return>, you will be shown the instruction page. Read the instructions, but do not hit spacebar yet.\
+\'95	Return to the video player. Hit play, and set the playback speed to the desired accelerated pace. We recommend scoring videos at between 3x-5x speed depending on experience and comfort level. There will probably be a brief delay before the vole is placed in the middle of the apparatus. During this time, select the Terminal window with the scoring program and set a timer or use a stopwatch for how long your video will take to score. E.g. if you\'92re scoring a PPT (180 minutes) at 5x, set a timer for 36 minutes so you stop scoring at the appropriate time. You can rewind all the way to the beginning, or start partway into the video, as long as there is enough time to have clicked back over to terminal before the focal vole is placed in the arena.
+\f3\i   
+\f2\i0 \
+\pard\pardeftab720\li720\fi-360\ri52\partightenfactor0
+\ls2\ilvl0
+\fs22 \cf0 \'95	
+\fs20 When the vole in the video is placed in the central chamber, start your stopwatch and hit <spacebar> in Terminal to begin scoring. A small vole image will appear. Use the instructions to move the vole image to match the state descriptions.  The key that displays \'93<\'94 and \'93,\'94 moves the image left.  The key that displays \'93>\'94 and \'93.\'94 moves the vole right. 
+\f3\i \
+\pard\pardeftab720\li720\fi-360\ri52\partightenfactor0
+\ls2\ilvl0
+\f2\i0 \cf0 \'95	Note that you must have the scoring software as the active window to start and throughout the test (i.e. if you click on another window it will no longer register your key strokes in the scoring program).
+\f3\i \
+\ls2\ilvl0
+\f2\i0 \'95	Use the clicker or other counter to keep track of bouts of aggression during the test (when relevant). Notice any strange/unusual behavior or issues with the test to record at the end. \
+\'95	When your stopwatch indicates the test is done (or the vole is removed from the apparatus), hit <spacebar> in Terminal to end scoring. When prompted \'93Was this a full behavioral test?\'94 type \'93Y\'94 for yes if the test lasted the full 3 hours; otherwise hit \'93N\'94 for no and enter the correct amount of time in minutes (as prompted). 
+\f3\i \
+\ls2\ilvl0
+\f2\i0 \'95	You will be prompted for the scorer\'92s name, and provided a free text area where you can describe unusual behaviors, record counts of aggression (e.g. 3 left, 0 right) or other behaviors tallied with the hand counter, etc.\
+\'95	Locate the scoring file generated (TID\'85 .txt) on the Desktop). Test information appears at the top, followed by raw data (timestamps of each state transition), followed by summary data for analysis. You can open this file to make edits, for example if you made a typo in the notes section (backspace doesn\'92t work while running). \
+\'95	Move the file from the Desktop to the appropriate project folder on a lab server \
+\'95	Once a batch of files has been scored, enter the summary data into your analysis software of choice. We intentionally leave the ID of the focal vole and the identity/position of the partner off of the test card shown on camera to avoid knowledge of \'93partner\'94 position, so determining the ID of the focal vole and whether left huddling or right huddling maps onto partner huddling require access to the lab notebook or other location in which additional test information was recorded.\
+\'95	By default, summary data are provided at scoring speed, as well as scaled to the 180-minute test duration. If the test is not run for 180 minutes, either edit the scoring code to scale to the appropriate duration, or work with the data from scoring speed and scale it manually.\
+\'95	If more detailed timeline analysis is desirable, raw timestamps in the text files can be extracted for additional analyses, such as trajectories of P-S huddling or preference score %(partner/total huddling). We have R scripts to do this, and a future version of the IntervoleTimer file output will be formatted to increase ease of automated data extraction.\
+\pard\pardeftab720\li360\fi-360\ri52\partightenfactor0
+\cf0 \
+}

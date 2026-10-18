@@ -1,0 +1,10 @@
+{
+  "name": "intervole-timer",
+  "version": "1.0.0",
+  "description": "Behavioral scoring tool for vole partner preference tests",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intervole Timer — Behavioral Scoring</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --panel: #16213e;
+    --accent: #0f3460;
+    --highlight: #e94560;
+    --text: #eaeaea;
+    --muted: #888;
+    --state0: #4a90d9;
+    --state1: #7ec8e3;
+    --state2: #6bc5a0;
+    --state3: #f5a623;
+    --state4: #e94560;
+    --success: #6bc5a0;
+    --warning: #f5a623;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .screen { display: none; width: 100%; max-width: 900px; padding: 24px; }
+  .screen.active { display: block; }
+
+  /* ── Title Screen ────────────────────────────────────────────── */
+  .title-screen {
+    text-align: center;
+    padding: 48px 24px;
+  }
+  .vole-art {
+    font-family: monospace;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--state2);
+    margin: 16px 0;
+    white-space: pre;
+    display: inline-block;
+  }
+  h1 { font-size: 2.2rem; color: var(--highlight); margin-bottom: 8px; }
+  .subtitle { color: var(--muted); margin-bottom: 32px; }
+
+  /* ── Forms ───────────────────────────────────────────────────── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  input, select {
+    background: var(--accent);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus { border-color: var(--highlight); }
+  input::placeholder { color: var(--muted); }
+
+  .panel {
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+  .panel h2 { font-size: 1.2rem; margin-bottom: 20px; color: var(--highlight); }
+
+  /* ── Buttons ─────────────────────────────────────────────────── */
+  .btn {
+    background: var(--highlight);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn:hover { opacity: .88; }
+  .btn:active { transform: scale(.97); }
+  .btn-secondary {
+    background: var(--accent);
+    color: var(--text);
+  }
+  .btn-success { background: var(--success); color: #111; }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* ── Instructions Layout ─────────────────────────────────────── */
+  .instructions-panel {
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 20px 28px;
+    margin-bottom: 24px;
+    font-size: .9rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .instructions-panel strong { color: var(--text); }
+  .key {
+    display: inline-block;
+    background: var(--accent);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 5px;
+    padding: 1px 8px;
+    font-family: monospace;
+    font-size: .9em;
+    color: var(--text);
+  }
+
+  /* ── Arena ───────────────────────────────────────────────────── */
+  .arena-wrapper {
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .zone-labels {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+    text-align: center;
+    font-size: .72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .arena {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .zone {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: rgba(255,255,255,.04);
+    border: 2px solid transparent;
+    transition: all .15s ease;
+    position: relative;
+  }
+  .zone-0 { border-radius: 12px 0 0 12px; }
+  .zone-4 { border-radius: 0 12px 12px 0; }
+  .zone.active {
+    border-color: var(--highlight);
+    background: rgba(233,69,96,.15);
+    box-shadow: 0 0 16px rgba(233,69,96,.3);
+  }
+  .vole-icon { font-size: 2rem; transition: all .15s; }
+
+  /* State colors */
+  .zone-0.active { border-color: var(--state0); background: rgba(74,144,217,.2); box-shadow: 0 0 16px rgba(74,144,217,.3); }
+  .zone-1.active { border-color: var(--state1); background: rgba(126,200,227,.2); box-shadow: 0 0 16px rgba(126,200,227,.3); }
+  .zone-2.active { border-color: var(--state2); background: rgba(107,197,160,.2); box-shadow: 0 0 16px rgba(107,197,160,.3); }
+  .zone-3.active { border-color: var(--state3); background: rgba(245,166,35,.2); box-shadow: 0 0 16px rgba(245,166,35,.3); }
+  .zone-4.active { border-color: var(--state4); background: rgba(233,69,96,.2); box-shadow: 0 0 16px rgba(233,69,96,.3); }
+
+  /* ── State Display ───────────────────────────────────────────── */
+  .state-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 20px 28px;
+    margin-bottom: 20px;
+  }
+  .state-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+  .state-name.s0 { color: var(--state0); }
+  .state-name.s1 { color: var(--state1); }
+  .state-name.s2 { color: var(--state2); }
+  .state-name.s3 { color: var(--state3); }
+  .state-name.s4 { color: var(--state4); }
+
+  .timer-display {
+    font-family: monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: .05em;
+  }
+  .elapsed-display {
+    font-size: .9rem;
+    color: var(--muted);
+    text-align: right;
+  }
+  .elapsed-display span { font-family: monospace; color: var(--text); }
+
+  /* ── Pause Overlay ───────────────────────────────────────────── */
+  .pause-banner {
+    background: rgba(245,166,35,.15);
+    border: 2px solid var(--warning);
+    border-radius: 12px;
+    padding: 14px 24px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--warning);
+    margin-bottom: 16px;
+    display: none;
+  }
+  .pause-banner.visible { display: block; }
+
+  /* ── Raw Data Table ──────────────────────────────────────────── */
+  .raw-data {
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: .78rem;
+    color: var(--muted);
+  }
+  .raw-data-header {
+    color: var(--highlight);
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: .8rem;
+  }
+  .raw-row { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+  .raw-row:last-child { border-bottom: none; }
+
+  /* ── Summary Screen ──────────────────────────────────────────── */
+  .summary-section { margin-bottom: 24px; }
+  .summary-section h3 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--accent);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat-label { font-size: .78rem; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
+  .stat-value { font-size: 1.4rem; font-weight: 700; font-family: monospace; }
+  .stat-value.s0 { color: var(--state0); }
+  .stat-value.s4 { color: var(--state4); }
+  .stat-value.s2 { color: var(--state2); }
+  .stat-sub { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+  .notes-area {
+    width: 100%;
+    background: var(--accent);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 12px;
+    font-size: .9rem;
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+  }
+  .notes-area:focus { border-color: var(--highlight); }
+
+  .partial-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .radio-group { display: flex; gap: 16px; }
+  .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 1rem;
+    color: var(--text);
+  }
+  .radio-group input[type=radio] { accent-color: var(--highlight); width: 16px; height: 16px; }
+
+  .duration-input-row {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .duration-input-row.visible { display: flex; }
+  .duration-input-row input { width: 100px; }
+
+  .text-output {
+    background: #0d1117;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: monospace;
+    font-size: .8rem;
+    color: #cdd9e5;
+    white-space: pre;
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,.08);
+    line-height: 1.5;
+  }
+
+  /* ── Kbd hint bar ────────────────────────────────────────────── */
+  .kbd-bar {
+    background: rgba(255,255,255,.04);
+    border-radius: 10px;
+    padding: 10px 20px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: .83rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .kbd-bar span { display: flex; align-items: center; gap: 6px; }
+
+  /* ── Responsive ──────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+    .timer-display { font-size: 1.4rem; }
+    .state-name { font-size: 1.1rem; }
+    h1 { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ TITLE SCREEN ═══════════════════════ -->
+<div id="screen-title" class="screen active title-screen">
+  <pre class="vole-art">()-().----.      .
+ \"/` ___  ;____.'
+  ` ^^   ^^</pre>
+  <h1>Intervole Timer</h1>
+  <p class="subtitle">Behavioral Scoring Tool &nbsp;·&nbsp; Partner Preference Tests<br>
+    <small style="opacity:.6">&copy; A. Beery 2006–2012 · Web edition</small></p>
+  <button class="btn" onclick="showSetup()">New Scoring Session</button>
+</div>
+
+<!-- ═══════════════════════ SETUP SCREEN ═══════════════════════ -->
+<div id="screen-setup" class="screen">
+  <div class="panel">
+    <h2>Session Setup</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Test ID</label>
+        <input id="testId" type="text" placeholder="e.g. 2024-1-15 Stress PPT Video 50" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Test Date (MM/DD/YY)</label>
+        <input id="testDate" type="text" placeholder="e.g. 01/15/24" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Left Vole (tethered)</label>
+        <input id="leftVole" type="text" placeholder="e.g. p8086" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Right Vole (tethered)</label>
+        <input id="rightVole" type="text" placeholder="e.g. p8093" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Playback Speed</label>
+        <select id="playbackSpeed">
+          <option value="1x">1x (real time)</option>
+          <option value="2x">2x</option>
+          <option value="4x" selected>4x</option>
+          <option value="6x">6x</option>
+          <option value="8x">8x</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Video File Type</label>
+        <input id="fileType" type="text" placeholder="e.g. .mp4, dvd, .mov" autocomplete="off">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="showTitle()">Back</button>
+      <button class="btn" onclick="startSetup()">Proceed to Scoring</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ SCORING SCREEN ═══════════════════════ -->
+<div id="screen-scoring" class="screen">
+
+  <div class="instructions-panel">
+    <strong>Controls:</strong>&nbsp;
+    <span class="key">Space</span> start/end &nbsp;·&nbsp;
+    <span class="key">,</span> move left &nbsp;·&nbsp;
+    <span class="key">.</span> move right &nbsp;·&nbsp;
+    <span class="key">P</span> pause / unpause<br>
+    <small>Start recording as soon as the video begins. Use <kbd class="key">,</kbd> and <kbd class="key">.</kbd> to track the focal vole's position in real time.</small>
+  </div>
+
+  <div id="pause-banner" class="pause-banner">
+    ⏸ PAUSED — note the video frame, then press <span class="key">P</span> to resume
+  </div>
+
+  <!-- Arena -->
+  <div class="arena-wrapper">
+    <div class="zone-labels">
+      <div>Left<br>Huddling</div>
+      <div>Left<br>Not Huddling</div>
+      <div>Center<br>Chamber</div>
+      <div>Right<br>Not Huddling</div>
+      <div>Right<br>Huddling</div>
+    </div>
+    <div class="arena">
+      <div class="zone zone-0" id="zone-0"></div>
+      <div class="zone zone-1" id="zone-1"></div>
+      <div class="zone zone-2" id="zone-2"></div>
+      <div class="zone zone-3" id="zone-3"></div>
+      <div class="zone zone-4" id="zone-4"></div>
+    </div>
+  </div>
+
+  <!-- State + Timer -->
+  <div class="state-info">
+    <div>
+      <div id="state-name" class="state-name s2">Center Chamber</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-top:4px">
+        State <span id="state-num">2</span> of 4
+      </div>
+    </div>
+    <div>
+      <div class="timer-display" id="total-timer">00:00:00</div>
+      <div class="elapsed-display">Total elapsed</div>
+    </div>
+    <div style="text-align:right">
+      <div class="elapsed-display">In current state: <span id="state-timer">0.0s</span></div>
+      <div class="elapsed-display">Bouts: <span id="bout-count">—</span></div>
+      <div id="waiting-msg" style="color:var(--warning);font-size:.9rem;margin-top:4px">
+        Press <span class="key">Space</span> to begin
+      </div>
+    </div>
+  </div>
+
+  <!-- Kbd bar (visible when running) -->
+  <div class="kbd-bar" id="kbd-bar" style="display:none">
+    <span><span class="key">,</span> Move Left</span>
+    <span><span class="key">.</span> Move Right</span>
+    <span><span class="key">P</span> Pause</span>
+    <span><span class="key">Space</span> End Session</span>
+  </div>
+
+  <!-- Raw data log -->
+  <div class="raw-data" id="raw-data">
+    <div class="raw-data-header">Raw Data Log</div>
+    <div id="raw-rows"><span style="color:var(--muted)">Entries will appear here as you score…</span></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════ SUMMARY SCREEN ═══════════════════════ -->
+<div id="screen-summary" class="screen">
+  <div class="panel">
+    <h2>Session Complete</h2>
+
+    <!-- Full / partial test -->
+    <div class="summary-section">
+      <h3>Test Duration</h3>
+      <div class="partial-row">
+        <span style="color:var(--muted);font-size:.9rem">Was this a full 180-min behavioral test?</span>
+        <div class="radio-group">
+          <label><input type="radio" name="testFull" value="yes" checked onchange="toggleDuration()"> Yes (full 180 min)</label>
+          <label><input type="radio" name="testFull" value="no" onchange="toggleDuration()"> No (partial)</label>
+        </div>
+      </div>
+      <div class="duration-input-row" id="partial-row">
+        <label style="text-transform:none;letter-spacing:0;color:var(--muted);font-size:.9rem">Total minutes scored (all parts combined):</label>
+        <input id="partialDuration" type="number" value="90" min="1" max="180" style="width:100px">
+      </div>
+    </div>
+
+    <!-- Scorer & Notes -->
+    <div class="summary-section">
+      <h3>Scorer Information</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Scorer Name</label>
+          <input id="scorerName" type="text" placeholder="Your name" autocomplete="off">
+        </div>
+        <div class="form-group full">
+          <label>Notes / Observations</label>
+          <textarea id="notes" class="notes-area" placeholder="Mention whether free vole interacted with each tethered vole, any unusual behavior, etc."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="generateSummary()">Calculate Results</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results-section" style="display:none">
+    <div class="panel">
+      <h2>Results</h2>
+      <div id="results-stats"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Text Output (copy or download)</h2>
+      <pre class="text-output" id="text-output"></pre>
+      <br>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="copyOutput()">Copy to Clipboard</button>
+        <button class="btn btn-success" onclick="downloadOutput()">Download .txt</button>
+        <button class="btn btn-secondary" onclick="newSession()">New Session</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const STATE_NAMES = [
+  'Left Huddling',
+  'Left (Not Huddling)',
+  'Center Chamber',
+  'Right (Not Huddling)',
+  'Right Huddling'
+];
+const STATE_COLORS = ['s0','s1','s2','s3','s4'];
+const VOLE_EMOJI = '🐭';
+
+let session = {
+  testId: '', testDate: '', leftVole: '', rightVole: '',
+  playbackSpeed: '', fileType: '',
+  started: false, ended: false, paused: false,
+  startTime: 0,       // performance.now() at start
+  stateStartTime: 0,  // performance.now() at current state start
+  currentState: 2,
+  durations: [0,0,0,0,0],    // seconds
+  iterations: [0,0,0,0,0],   // bout counts
+  rawLog: [],                 // {state, localtime, epochMs, elapsed, cumulative}
+  timerRaf: null,
+};
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showTitle() { showScreen('screen-title'); }
+function showSetup() { showScreen('screen-setup'); }
+
+function startSetup() {
+  const testId = document.getElementById('testId').value.trim() || 'unknown';
+  // Basic validation
+  session = {
+    testId,
+    testDate: document.getElementById('testDate').value.trim() || 'unspecified',
+    leftVole: document.getElementById('leftVole').value.trim() || '?',
+    rightVole: document.getElementById('rightVole').value.trim() || '?',
+    playbackSpeed: document.getElementById('playbackSpeed').value,
+    fileType: document.getElementById('fileType').value.trim() || 'unknown',
+    started: false, ended: false, paused: false,
+    startTime: 0, stateStartTime: 0,
+    currentState: 2,
+    durations: [0,0,0,0,0],
+    iterations: [0,0,0,0,0],
+    rawLog: [],
+    timerRaf: null,
+  };
+  updateArena();
+  updateStateName();
+  document.getElementById('raw-rows').innerHTML = '<span style="color:var(--muted)">Entries will appear here as you score…</span>';
+  document.getElementById('waiting-msg').style.display = '';
+  document.getElementById('kbd-bar').style.display = 'none';
+  document.getElementById('total-timer').textContent = '00:00:00';
+  document.getElementById('state-timer').textContent = '0.0s';
+  document.getElementById('bout-count').textContent = '—';
+  document.getElementById('pause-banner').classList.remove('visible');
+  showScreen('screen-scoring');
+}
+
+// ── Arena Rendering ────────────────────────────────────────────────────────
+function updateArena() {
+  for (let i = 0; i < 5; i++) {
+    const el = document.getElementById(`zone-${i}`);
+    el.classList.toggle('active', i === session.currentState);
+    el.textContent = (i === session.currentState) ? VOLE_EMOJI : '';
+  }
+}
+
+function updateStateName() {
+  const el = document.getElementById('state-name');
+  el.textContent = STATE_NAMES[session.currentState];
+  el.className = 'state-name ' + STATE_COLORS[session.currentState];
+  document.getElementById('state-num').textContent = session.currentState;
+  // Bout count label
+  const bc = document.getElementById('bout-count');
+  if (session.currentState === 0 || session.currentState === 4) {
+    bc.textContent = session.iterations[session.currentState] + ' huddling bout(s)';
+  } else if (session.currentState === 2) {
+    bc.textContent = session.iterations[2] + ' center entr(ies)';
+  } else {
+    bc.textContent = '—';
+  }
+}
+
+// ── Timer Loop ────────────────────────────────────────────────────────────
+function startTimerLoop() {
+  function tick() {
+    if (!session.started || session.ended) return;
+    const now = performance.now();
+    if (!session.paused) {
+      const totalSec = (now - session.startTime) / 1000;
+      document.getElementById('total-timer').textContent = formatHMS(totalSec);
+      const stateSec = (now - session.stateStartTime) / 1000;
+      document.getElementById('state-timer').textContent = stateSec.toFixed(1) + 's';
+    }
+    session.timerRaf = requestAnimationFrame(tick);
+  }
+  session.timerRaf = requestAnimationFrame(tick);
+}
+
+function formatHMS(totalSeconds) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.floor(totalSeconds % 60);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// ── Recording ─────────────────────────────────────────────────────────────
+function recordState() {
+  const now = performance.now();
+  const elapsed = (now - session.stateStartTime) / 1000;
+  const epochMs = Date.now() - ((now - session.stateStartTime));
+  const d = new Date(epochMs);
+  const localtime = `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`;
+  const epochSec = epochMs / 1000;
+
+  session.durations[session.currentState] += elapsed;
+
+  // Bout counting
+  if (elapsed > 3) {
+    session.iterations[session.currentState]++;
+  } else if (session.currentState === 2) {
+    session.iterations[2]++;
+  }
+
+  const cumulative = session.durations[session.currentState];
+  session.rawLog.push({
+    state: session.currentState,
+    localtime,
+    epochSec,
+    elapsed,
+    cumulative,
+  });
+
+  appendRawRow(session.currentState, localtime, epochSec, elapsed, cumulative);
+
+  // Return new state-start time
+  return now;
+}
+
+function appendRawRow(state, localtime, epochSec, elapsed, cumulative) {
+  const container = document.getElementById('raw-rows');
+  // Clear placeholder
+  if (container.querySelector('span')) container.innerHTML = '';
+  const row = document.createElement('div');
+  row.className = 'raw-row';
+  row.textContent = `${state}, ${localtime}, ${epochSec.toFixed(6)}, ${elapsed.toFixed(6)}, Cum: ${cumulative.toFixed(6)}`;
+  container.appendChild(row);
+  container.parentElement.scrollTop = container.parentElement.scrollHeight;
+}
+
+// ── Key Handling ──────────────────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  const activeScreen = document.querySelector('.screen.active');
+  if (!activeScreen || activeScreen.id !== 'screen-scoring') return;
+
+  // Prevent default only for scoring keys to avoid blocking form inputs
+  if ([' ', ',', '.', 'p', 'P'].includes(e.key)) {
+    // Allow typing in form fields
+    if (document.activeElement.tagName === 'INPUT' ||
+        document.activeElement.tagName === 'TEXTAREA') return;
+    e.preventDefault();
+  } else {
+    return;
+  }
+
+  if (e.key === ' ') {
+    handleSpace();
+  } else if (!session.started || session.ended) {
+    return;
+  } else if (e.key === 'p' || e.key === 'P') {
+    handlePause();
+  } else if (session.paused) {
+    return;
+  } else if (e.key === ',') {
+    handleLeft();
+  } else if (e.key === '.') {
+    handleRight();
+  }
+});
+
+function handleSpace() {
+  if (!session.started) {
+    // Begin
+    const now = performance.now();
+    session.startTime = now;
+    session.stateStartTime = now;
+    session.started = true;
+    document.getElementById('waiting-msg').style.display = 'none';
+    document.getElementById('kbd-bar').style.display = 'flex';
+    startTimerLoop();
+    // Count the initial center entry
+    session.iterations[session.currentState]++;
+    updateStateName();
+  } else if (!session.ended) {
+    // End
+    session.stateStartTime = recordState();
+    session.ended = true;
+    if (session.timerRaf) cancelAnimationFrame(session.timerRaf);
+    document.getElementById('kbd-bar').style.display = 'none';
+    showScreen('screen-summary');
+  }
+}
+
+function handlePause() {
+  if (!session.paused) {
+    // Pause: record state duration so far
+    session.stateStartTime = recordState();
+    session.paused = true;
+    document.getElementById('pause-banner').classList.add('visible');
+    if (session.timerRaf) cancelAnimationFrame(session.timerRaf);
+  } else {
+    // Unpause
+    session.paused = false;
+    session.stateStartTime = performance.now();
+    document.getElementById('pause-banner').classList.remove('visible');
+    startTimerLoop();
+    // Count re-entry into current state
+    if (session.currentState === 2) {
+      session.iterations[2]++;
+    }
+    updateStateName();
+  }
+}
+
+function handleLeft() {
+  if (session.currentState > 0) {
+    session.stateStartTime = recordState();
+    session.currentState--;
+    // Count entry into new state
+    if (session.currentState === 2) {
+      session.iterations[2]++;
+    }
+    updateArena();
+    updateStateName();
+  }
+}
+
+function handleRight() {
+  if (session.currentState < 4) {
+    session.stateStartTime = recordState();
+    session.currentState++;
+    if (session.currentState === 2) {
+      session.iterations[2]++;
+    }
+    updateArena();
+    updateStateName();
+  }
+}
+
+// ── Summary Screen ────────────────────────────────────────────────────────
+function toggleDuration() {
+  const partial = document.querySelector('input[name=testFull]:checked').value === 'no';
+  document.getElementById('partial-row').classList.toggle('visible', partial);
+}
+
+function generateSummary() {
+  const isFull = document.querySelector('input[name=testFull]:checked').value === 'yes';
+  let testDuration = 180;
+  if (!isFull) {
+    testDuration = parseFloat(document.getElementById('partialDuration').value) || 180;
+    if (testDuration < 1 || testDuration > 600) testDuration = 180;
+  }
+
+  const scorer = document.getElementById('scorerName').value.trim() || 'Unknown';
+  const notes = document.getElementById('notes').value.trim();
+
+  const d = session.durations;
+  const it = session.iterations;
+
+  const leftHud = d[0] / 60;
+  const leftNotHud = d[1] / 60;
+  const solo = d[2] / 60;
+  const rightNotHud = d[3] / 60;
+  const rightHud = d[4] / 60;
+  const totalMin = (d[0]+d[1]+d[2]+d[3]+d[4]) / 60;
+  const multiplier = totalMin > 0 ? testDuration / totalMin : 1;
+
+  const activity = Math.max(0, it[2] - 1);
+
+  // Build stats cards
+  const statsHtml = buildStatsHTML(
+    leftHud, leftNotHud, solo, rightNotHud, rightHud, totalMin,
+    it, multiplier, activity, testDuration
+  );
+  document.getElementById('results-stats').innerHTML = statsHtml;
+
+  // Build text output
+  const txt = buildTextOutput(
+    leftHud, leftNotHud, solo, rightNotHud, rightHud, totalMin,
+    it, multiplier, activity, testDuration, scorer, notes
+  );
+  document.getElementById('text-output').textContent = txt;
+  document.getElementById('results-section').style.display = '';
+  document.getElementById('results-section').scrollIntoView({behavior:'smooth'});
+}
+
+function buildStatsHTML(leftHud, leftNotHud, solo, rightNotHud, rightHud, totalMin, it, mult, activity, testDuration) {
+  const fmt = (v) => v.toFixed(2);
+  return `
+    <div class="summary-section">
+      <h3>Actual Scored Totals (at scoring speed)</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Time Left</div>
+          <div class="stat-value s0">${fmt(leftHud+leftNotHud)} <small>min</small></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Time Right</div>
+          <div class="stat-value s4">${fmt(rightHud+rightNotHud)} <small>min</small></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Time Solo (Center)</div>
+          <div class="stat-value s2">${fmt(solo)} <small>min</small></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Huddling Left</div>
+          <div class="stat-value s0">${fmt(leftHud)} <small>min</small></div>
+          <div class="stat-sub">${it[0]} bout(s)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Huddling Right</div>
+          <div class="stat-value s4">${fmt(rightHud)} <small>min</small></div>
+          <div class="stat-sub">${it[4]} bout(s)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Not Huddling Left</div>
+          <div class="stat-value">${fmt(leftNotHud)} <small>min</small></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Not Huddling Right</div>
+          <div class="stat-value">${fmt(rightNotHud)} <small>min</small></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Scored</div>
+          <div class="stat-value">${fmt(totalMin)} <small>min</small></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Activity (center entries)</div>
+          <div class="stat-value s2">${activity}</div>
+          <div class="stat-sub">corrected (−1)</div>
+        </div>
+      </div>
+    </div>
+    <div class="summary-section">
+      <h3>Scaled Totals (${testDuration}-min test)</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Time Left</div>
+          <div class="stat-value s0">${fmt(mult*(leftHud+leftNotHud))} <small>min</small></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Time Right</div>
+          <div class="stat-value s4">${fmt(mult*(rightHud+rightNotHud))} <small>min</small></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Time Solo (Center)</div>
+          <div class="stat-value s2">${fmt(mult*solo)} <small>min</small></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Huddling Left (scaled)</div>
+          <div class="stat-value s0">${fmt(mult*leftHud)} <small>min</small></div>
+          <div class="stat-sub">${it[0]} bout(s)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Huddling Right (scaled)</div>
+          <div class="stat-value s4">${fmt(mult*rightHud)} <small>min</small></div>
+          <div class="stat-sub">${it[4]} bout(s)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Activity (center entries)</div>
+          <div class="stat-value s2">${activity}</div>
+          <div class="stat-sub">corrected (−1), unscaled</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildTextOutput(leftHud, leftNotHud, solo, rightNotHud, rightHud, totalMin,
+    it, mult, activity, testDuration, scorer, notes) {
+  const fmt2 = (v) => v.toFixed(2);
+  const lines = [];
+
+  lines.push(`Test ID: ${session.testId}   Test Date: ${session.testDate}   Left vole: ${session.leftVole}   Right vole: ${session.rightVole}`);
+  lines.push(`Video source: ${session.fileType}, playback speed: ${session.playbackSpeed}`);
+  lines.push('');
+  lines.push('RAW DATA:');
+  lines.push('State, Localtime, Full Timestamp of start (sec since epoch), Sec in state, Cum. sec in state');
+  lines.push('----------------------------------------------------------------------');
+  for (const row of session.rawLog) {
+    lines.push(`${row.state}, ${row.localtime}, ${row.epochSec.toFixed(6)}, ${row.elapsed.toFixed(6)}, Cumulative duration: ${row.cumulative.toFixed(6)}`);
+  }
+  lines.push('');
+  lines.push('----------------------------------------------------------------------');
+  lines.push('');
+  lines.push('SUMMARY DATA:');
+  lines.push('--------------ACTUAL SCORED TOTALS (at scoring speed)------------------');
+  lines.push(`Total time left:  ${fmt2(leftHud+leftNotHud)} min`);
+  lines.push(`Total time right: ${fmt2(rightHud+rightNotHud)} min`);
+  lines.push(`Time solo:        ${fmt2(solo)} min`);
+  lines.push(`Huddling left:    ${fmt2(leftHud)} min, ${it[0]} bout(s)        Huddling right:   ${fmt2(rightHud)} min, ${it[4]} bout(s)`);
+  lines.push(`Not hudd left:    ${fmt2(leftNotHud)} min`);
+  lines.push(`Not hudd right:   ${fmt2(rightNotHud)} min`);
+  lines.push(`Total min scored: ${fmt2(totalMin)} min`);
+  lines.push(`Activity (corrected center entries): ${activity}`);
+  lines.push(`--------------SCALED SCORED TOTALS (${testDuration} min test)--------------------------`);
+  lines.push(`Left vole: ${session.leftVole}, Right vole: ${session.rightVole}`);
+  lines.push(`Total min (scaled): ${fmt2(mult*totalMin)} min`);
+  lines.push('');
+  lines.push(`Total time left:  ${fmt2(mult*(leftHud+leftNotHud))} min`);
+  lines.push(`Total time right: ${fmt2(mult*(rightHud+rightNotHud))} min`);
+  lines.push(`Time solo:        ${fmt2(mult*solo)} min`);
+  lines.push(`Activity (corrected center entries): ${activity}`);
+  lines.push(`Huddling left:    ${fmt2(mult*leftHud)} min, ${it[0]} bout(s)`);
+  lines.push(`Huddling right:   ${fmt2(mult*rightHud)} min, ${it[4]} bout(s)`);
+  lines.push('');
+  lines.push(`Scored by: ${scorer}`);
+  lines.push('');
+  lines.push('---------------NOTES----------------------------------------------------');
+  if (notes) lines.push(notes);
+
+  return lines.join('\n');
+}
+
+function copyOutput() {
+  const txt = document.getElementById('text-output').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = txt;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+function downloadOutput() {
+  const txt = document.getElementById('text-output').textContent;
+  const filename = `TID${session.testId.replace(/[^a-zA-Z0-9_\-]/g,'_')}.txt`;
+  const blob = new Blob([txt], {type: 'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function newSession() {
+  showTitle();
+}
+
+// ── Touch support (swipe left/right for state changes) ────────────────────
+let touchStartX = null;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+}, {passive: true});
+document.addEventListener('touchend', (e) => {
+  if (touchStartX === null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  touchStartX = null;
+  const activeScreen = document.querySelector('.screen.active');
+  if (!activeScreen || activeScreen.id !== 'screen-scoring') return;
+  if (!session.started || session.ended || session.paused) return;
+  if (Math.abs(dx) < 40) return;
+  if (dx < 0) handleRight();
+  else handleLeft();
+}, {passive: true});
+</script>
+</body>
+</html>

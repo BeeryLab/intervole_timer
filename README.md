@@ -5,7 +5,7 @@ Partner preference test scoring script
 
 **Use it in your browser: https://beerylab.github.io/intervole_timer/**
 
-The web version provides the same functionality as the original Perl script:
+Version 2.0 is a web app with the same functionality as the original Perl script:
 score the focal vole's location across the five arena zones while watching the
 test video, then copy or download the results as a `.txt` file in the same
 format the Perl script produces. Everything runs locally in the browser; no
@@ -22,11 +22,13 @@ Keyboard controls:
 
 On touch devices, swipe left or right to change zones.
 
-The whole app is the single file `index.html`. To run it locally, open that
-file in a browser, or run `node server.js` and visit http://localhost:3001.
+## Repository layout
 
-## Original Perl script
-
-`IntervoleTimer1.6.pl` is the original command-line scoring script, with its
-instructions (`IntervoleTimer1.6 Instructions.pdf` / `.rtf`) and sample output
-(`IntervoleTimer1.6-TIDSampleOutput.txt`).
+- `v2_web/`: Version 2.0, the web app. The whole app is the single file
+  `index.html`. To run it locally, open that file in a browser, or run
+  `node v2_web/server.js` and visit http://localhost:3001. Pushes to `main` that
+  touch `v2_web/` redeploy the live site.
+- `v1_perl/`: Version 1.6, the original command-line Perl script
+  (`IntervoleTimer1.6.pl`), with its instructions
+  (`IntervoleTimer1.6 Instructions.pdf` / `.rtf`) and sample output
+  (`IntervoleTimer1.6-TIDSampleOutput.txt`).
